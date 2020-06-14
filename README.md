@@ -1,4 +1,4 @@
-# resilient_code
+# Resilient Code
  
 There are three cases of code failures. The first case is known knowns, you can code specifically to detect and handle these cases. The second case is known unknowns, assertions can be used to safeguard against these. The third case is unknown unknowns, where you have to resort to try except, and painfully debug the stack trace each time it occurs.
 
