@@ -12,7 +12,7 @@ import sys
 import types
 
 
-def resilient(_func=None, max_tries=1, whitelist_var=[], blacklist_var=[], max_var_str_len=1000, to_log=True,
+def resilient(_func=None, max_tries=1, whitelist_var=[], blacklist_var=[], max_var_str_len=500, to_log=True,
               reraise = True,
               to_pickle=False, to_pickle_path='exception_variable_dump.pkl', custom_log_msg='',
               exponential_backoff = {'min': 0.05, 'max': 1}):
@@ -96,7 +96,7 @@ def resilient(_func=None, max_tries=1, whitelist_var=[], blacklist_var=[], max_v
 
 class Resilient(object):
     """Code block decorator for resilient_code"""
-    def __init__(self, max_tries=1, whitelist_var=[], blacklist_var=[], max_var_str_len=100, to_log=True,
+    def __init__(self, max_tries=1, whitelist_var=[], blacklist_var=[], max_var_str_len=500, to_log=True,
                  reraise = True, _exception_handler=False,
               to_pickle=False, to_pickle_path='exception_variable_dump.pkl', custom_log_msg=''):
         """        
