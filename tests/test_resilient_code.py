@@ -8,10 +8,12 @@ def function_raise_exception():
     return new_var
 
 @resilient
-def function_raise_exception_decorated():
+def function_raise_exception_decorated(awd):
     new_var = 2
     raise ValueError
     return new_var
+
+function_raise_exception_decorated(awd=3)
 
 @resilient(max_tries=1, custom_log_msg='custom log message test')
 def function_raise_exception_decorated_custom_args():
