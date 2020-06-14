@@ -85,15 +85,15 @@ def resilient(_func=None, max_tries=1, whitelist_var=[], blacklist_var=[], max_v
                         if args:
                             for idx, i in enumerate(args):
                                 if len(str(i)) > max_var_str_len:
-                                    if isinstance(i,str):
+                                    if isinstance(i, str):
                                         args[idx] = i[:max_var_str_len]
                                     else:
                                         args[idx] = str(i)[:max_var_str_len]
-                            func_arg_msg += f'args: {args}' 
+                            func_arg_msg += f'args: {args}'
                         if kwargs:
                             for i in kwargs:
                                 if len(str(kwargs[i])) > max_var_str_len:
-                                    if isinstance(kwargs[i],str):
+                                    if isinstance(kwargs[i], str):
                                         kwargs[i] = kwargs[i][:max_var_str_len]
                                     else:
                                         kwargs[i] = str(kwargs[i])[:max_var_str_len]
@@ -213,9 +213,9 @@ class Resilient(object):
                         continue
                     if self.blacklist_var and i in self.blacklist_var:
                         continue
-                    if len(str(final_var_dump[i])) > self.max_var_str_len: # truncation involves conversion to string
+                    if len(str(final_var_dump[i])) > self.max_var_str_len:  # truncation involves conversion to string
                         final_var_dump[i] = str(type(final_var_dump[i])) + ' ' + \
-                                            str(final_var_dump[i])[:self.max_var_str_len]
+                            str(final_var_dump[i])[:self.max_var_str_len]
 
                 if not self.reraise:
                     traceback_msg = traceback.format_exception(*exc_info)
@@ -269,4 +269,3 @@ def _determine_sleep_time(current_time, min_time, max_time):
     current_time += random.randint(round(-50 * current_time),
                                    round(50 * current_time)) / 1000
     return current_time
-
