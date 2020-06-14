@@ -34,7 +34,7 @@ resilient(test)()
 
 # For code blocks
 with Resilient():
-	raise ValueError
+    raise ValueError
 	
 # For code blocks, if multiple attempts are required
 for attempt in Resilient(max_tries=3):
