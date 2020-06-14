@@ -1,10 +1,10 @@
-# resilient_code
+# Resilient Code
  
 There are three cases of code failures. The first case is known knowns, you can code specifically to detect and handle these cases. The second case is known unknowns, assertions can be used to safeguard against these. The third case is unknown unknowns, where you have to resort to try except, and painfully debug the stack trace each time it occurs.
 
 This library simplifies the way to handle the third case of code failures by introducing decorators and helper functions to automatically handle errors using multiple features such as retrying, logging, dumping variables, all with the minimal amount of code decoration.
 
-[resilient_requests](https://github.com/actushumanus/resilient_requests) - Requests-specific resilient code
+[resilient_requests](https://github.com/lohjine/resilient_requests) - Requests-specific resilient code
 
 ## Installation
 
@@ -18,7 +18,7 @@ resilient_code can be used on functions or code blocks.
 
 If used on a function, resilient_code is able to dump local variables. For code blocks, a diff on global variables is done before and after the exception for the variable dump, note that this does not catch variables that are modified within the code block, only newly introduced ones.
 
-```
+```python
 from resilient_code import resilient, Resilient
 
 # For functions, as a decorator
