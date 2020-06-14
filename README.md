@@ -4,7 +4,7 @@ There are three cases of code failures. The first case is known knowns, you can 
 
 This library simplifies the way to handle the third case of code failures by introducing decorators and helper functions to automatically handle errors using multiple features such as retrying, logging, dumping variables, all with the minimal amount of code decoration.
 
-[resilient_requests](https://github.com/actushumanus/resilient_requests) - Requests-specific resilient code
+[resilient_requests](https://github.com/lohjine/resilient_requests) - Requests-specific resilient code
 
 ## Installation
 
