@@ -18,6 +18,10 @@ resilient_code can be used on functions or code blocks.
 
 If used on a function, resilient_code is able to dump local variables. For code blocks, a diff on global variables is done before and after the exception for the variable dump, note that this does not catch variables that are modified within the code block, only newly introduced ones.
 
+By default, resilient will dump variables using `logging`, and re-raise the exception.
+
+You can tweak the number of retries, additionally dump varibles to pickled file, specify variables to dump/ignore. See Args section below.
+
 ```python
 from resilient_code import resilient, Resilient
 
