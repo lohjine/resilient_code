@@ -184,7 +184,7 @@ class Resilient(object):
         self.sleep_time = -1
 
         if not self.whitelist_var and not self._exception_handler and (self.to_log or self.to_pickle):
-            self.original_keys = set([i for i in locals().keys() if i[0] != '_'])
+            self.original_vars = set([i for i in locals().keys() if i[0] != '_'])
 
     def __enter__(self):
         pass
@@ -220,7 +220,7 @@ class Resilient(object):
                 _var_dump = {k: v for k, v in _var_dump.items() if k[0] != '_' and type(v) not in
                              (types.FunctionType, types.ModuleType, types.MethodType, type)}
 
-                final_keys = set(_var_dump.keys()).difference(self.original_keys)
+                final_keys = set(_var_dump.keys()).difference(self.original_vars)
 
                 final_var_dump = {k: _var_dump[k] for k in final_keys}
 
