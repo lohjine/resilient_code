@@ -16,8 +16,7 @@ logging.getLogger('resilient_code').addHandler(logging.NullHandler())
 
 
 def resilient(_func=None, max_tries=1, whitelist_var=[], blacklist_var=[], max_var_str_len=500, to_log=True,
-              reraise=True,
-              to_pickle=False, to_pickle_path='exception_variable_dump.pkl', custom_log_msg='',
+              reraise=True, to_pickle=False, to_pickle_path='exception_variable_dump.pkl', custom_log_msg='',
               exponential_backoff={'min': 0.05, 'max': 1}):
     """
     Decorator for resilient_code
@@ -43,6 +42,9 @@ def resilient(_func=None, max_tries=1, whitelist_var=[], blacklist_var=[], max_v
     def decorator_repeat(func):
         @functools.wraps(func)
         def wrapper_resilient(*args, **kwargs):
+
+            _ = _check_input_arguments(max_tries, whitelist_var, blacklist_var, max_var_str_len, to_log, reraise, to_pickle,
+                           to_pickle_path, custom_log_msg, exponential_backoff)
 
             tries = 0
             sleep_time = -1
@@ -164,6 +166,9 @@ class Resilient(object):
                 with attempt:
                     # your code
         """
+        _ = _check_input_arguments(max_tries, whitelist_var, blacklist_var, max_var_str_len, to_log, reraise, to_pickle,
+                           to_pickle_path, custom_log_msg, exponential_backoff)
+
         self.max_tries = max_tries
         self.tries = 0
         self.whitelist_var = whitelist_var
@@ -291,3 +296,38 @@ def _determine_sleep_time(current_time, min_time, max_time):
     current_time += random.random() * 0.05 * current_time
 
     return current_time
+
+def _check_input_arguments(max_tries, whitelist_var, blacklist_var, max_var_str_len, to_log, reraise, to_pickle,
+                           to_pickle_path, custom_log_msg, exponential_backoff):
+    if not isinstance(max_tries, int):
+        raise TypeError(f'max_tries was {max_tries}, but it must be an integer')
+    if not max_tries > 0:
+        raise ValueError('max_tries must be more than 0')
+    if not isinstance(whitelist_var, (list, tuple)):
+        raise TypeError(f'whitelist_var was {whitelist_var}, but it must be a list or tuple')
+    if not all([isinstance(i, str) for i in whitelist_var]):
+        raise ValueError(f'whitelist_var was {whitelist_var}, but it must contain all strings')
+    if not isinstance(blacklist_var, (list, tuple)):
+        raise TypeError(f'blacklist_var was {blacklist_var}, but it must be a list or tuple')
+    if not all([isinstance(i, str) for i in blacklist_var]):
+        raise ValueError(f'blacklist_var was {blacklist_var}, but it must contain all strings')
+    if not isinstance(max_var_str_len, int):
+        raise TypeError(f'max_var_str_len was {max_var_str_len}, but it must be an integer')
+    if not max_var_str_len >= 0:
+        raise ValueError('max_var_str_len must be more than or equal to 0')
+    if not isinstance(to_log, bool):
+        raise TypeError(f'to_log was {to_log}, but it must be a boolean')
+    if not isinstance(reraise, bool):
+        raise TypeError(f'reraise was {reraise}, but it must be a boolean')
+    if not isinstance(to_pickle, bool):
+        raise TypeError(f'to_pickle was {to_pickle}, but it must be a boolean')
+    if not isinstance(to_pickle_path, str):
+        raise TypeError(f'to_pickle was {to_pickle_path}, but it must be a string')
+    if not isinstance(custom_log_msg, str):
+        raise TypeError(f'to_pickle was {custom_log_msg}, but it must be a string')
+    if not (isinstance(exponential_backoff, dict) or not exponential_backoff):
+        raise TypeError(f'exponential_backoff was {exponential_backoff}, but it must be a dict or falsy')
+    if isinstance(exponential_backoff, dict):
+        if not (isinstance(exponential_backoff.get('min', False), (float, int)) and isinstance(exponential_backoff.get('max', False), (float, int))):
+            raise ValueError(f"exponential_backoff was {exponential_backoff}, but it must contain keys 'min' and 'max' with float/int values")
+    return True
