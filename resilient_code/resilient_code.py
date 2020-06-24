@@ -12,6 +12,9 @@ import sys
 import types
 
 
+logging.getLogger('resilient_code').addHandler(logging.NullHandler())
+
+
 def resilient(_func=None, max_tries=1, whitelist_var=[], blacklist_var=[], max_var_str_len=500, to_log=True,
               reraise=True,
               to_pickle=False, to_pickle_path='exception_variable_dump.pkl', custom_log_msg='',
@@ -266,6 +269,6 @@ def _determine_sleep_time(current_time, min_time, max_time):
             current_time = max_time
 
     # add jitter of 5%
-    current_time += random.random() * 0.05 * current_time + current_time
+    current_time += random.random() * 0.05 * current_time
 
     return current_time
