@@ -140,14 +140,16 @@ class Resilient(object):
             exponential_backoff (dict):  Backoff parameters for retries. 'min' is number of seconds for the first retry. 'max' is the maximum number of seconds for each retry. Set equal values for both to have a constant retry interval. Note that jitter of 5% is automatically added.
 
         Usage:
-            For max_tries=1 (default):
-                with Resilient():
-                    # your code
+            For max_tries=1 (default)
+            ---
+            with Resilient():
+                # your code
 
-            For max_tries>1:
-                for attempt in Resilient(max_tries=2):
-                    with attempt:
-                        # your code
+            For max_tries>1
+            ---
+            for attempt in Resilient(max_tries=2):
+                with attempt:
+                    # your code
         """
         self.max_tries = max_tries
         self.tries = 0
