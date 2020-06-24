@@ -31,7 +31,7 @@ for attempt in Resilient(max_tries=2, reraise=False):
         raise ValueError
 
 
-class TestGet(TestCase):
+class TestResilientCode(TestCase):
     def test_decorated_function(self):
         try:
             function_raise_exception_decorated()
