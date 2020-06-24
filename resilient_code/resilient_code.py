@@ -266,6 +266,6 @@ def _determine_sleep_time(current_time, min_time, max_time):
             current_time = max_time
 
     # add jitter of 5%
-    current_time += random.randint(round(-50 * current_time),
-                                   round(50 * current_time)) / 1000
+    current_time += random.random() * 0.05 * current_time + current_time
+
     return current_time
