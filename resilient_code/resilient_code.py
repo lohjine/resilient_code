@@ -69,7 +69,7 @@ def resilient(_func=None, max_tries=1, whitelist_var=[], blacklist_var=[], max_v
                         try:
                             pickle.dump(local_var_dump, open(to_pickle_path, 'wb'))
                         except Exception as e:
-                            logging.error(f'Unable to dump pickle file: {e.with_traceback(None)}')
+                            logging.error(f'Unable to dump pickle file to {to_pickle_path}: {e.with_traceback(None)}')
 
                     if to_log:
                         msg = f"{' '.join(str(func).split(' ')[:2])+'>'} errored\n    "
@@ -228,7 +228,7 @@ class Resilient(object):
                 try:
                     pickle.dump(final_var_dump, open(self.to_pickle_path, 'wb'))
                 except Exception as e:
-                    logging.error(f'Unable to dump pickle file: {e.with_traceback(None)}')
+                    logging.error(f'Unable to dump pickle file to {self.to_pickle_path}: {e.with_traceback(None)}')
 
             if self.to_log:
 
