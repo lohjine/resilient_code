@@ -64,26 +64,22 @@ def resilient(_func=None, max_tries=1, whitelist_var=[], blacklist_var=[], max_v
                     local_var_dump = inspect.trace()[-1][0].f_locals
 
                     if to_pickle:
-                        pickle.dump(local_var_dump, open(to_pickle_path, 'wb'))
+                        try:
+                            pickle.dump(local_var_dump, open(to_pickle_path, 'wb'))
+                        except Exception as e:
+                            logging.error(f'Unable to dump pickle file: {e.with_traceback(None)}')
 
                     if to_log:
-                        for i in local_var_dump:
-                            if whitelist_var and i not in whitelist_var:
-                                continue
-                            if blacklist_var and i in blacklist_var:
-                                continue
-                            if len(str(local_var_dump[i])) > max_var_str_len:
-                                local_var_dump[i] = str(type(local_var_dump[i])) + ' ' + \
-                                    str(local_var_dump[i])[:max_var_str_len]
+                        msg = f'{func} errored\n    '
 
-                        msg = f'Exception variable dump: {local_var_dump}'
+                        ## Add custom log message, and traceback if it were to be swallowed afterwards
                         if custom_log_msg:
-                            msg = custom_log_msg + '\n    ' + msg
+                            msg += custom_log_msg + '\n    '
                         if not reraise:
                             traceback_msg = traceback.format_exception(*sys.exc_info())
-                            logging.error(''.join(traceback_msg))
-                        logging.error(msg)
+                            msg += ''.join(traceback_msg) + '\n    '
 
+                        ## Log input arguments to function
                         func_arg_msg = ''
                         if args:
                             for idx, i in enumerate(args):
@@ -104,7 +100,20 @@ def resilient(_func=None, max_tries=1, whitelist_var=[], blacklist_var=[], max_v
                                 func_arg_msg += '\n'
                             func_arg_msg += 'kwargs: ' + str(kwargs)
                         if func_arg_msg:
-                            logging.error(func_arg_msg)
+                            msg += func_arg_msg + '\n    '
+
+                        for i in local_var_dump:
+                            if whitelist_var and i not in whitelist_var:
+                                continue
+                            if blacklist_var and i in blacklist_var:
+                                continue
+                            if len(str(local_var_dump[i])) > max_var_str_len:
+                                local_var_dump[i] = str(type(local_var_dump[i])) + ' ' + \
+                                    str(local_var_dump[i])[:max_var_str_len]
+
+                        msg += f'Exception variable dump: {local_var_dump}'
+
+                        logging.error(msg)
 
                     if reraise:
                         raise
