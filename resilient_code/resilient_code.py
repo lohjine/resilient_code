@@ -213,8 +213,8 @@ class Resilient(object):
             if self.whitelist_var:
                 final_var_dump = {}
                 for i in self.whitelist_var:
-                    if i in _var_dump:  # globals():
-                        final_var_dump[i] = _var_dump[i]  # globals()[i]
+                    if i in _var_dump:
+                        final_var_dump[i] = _var_dump[i]
             else:
                 # filter out unlikely variables that we would be interested in
                 _var_dump = {k: v for k, v in _var_dump.items() if k[0] != '_' and type(v) not in
@@ -296,6 +296,7 @@ def _determine_sleep_time(current_time, min_time, max_time):
     current_time += random.random() * 0.05 * current_time
 
     return current_time
+
 
 def _check_input_arguments(max_tries, whitelist_var, blacklist_var, max_var_str_len, to_log, reraise, to_pickle,
                            to_pickle_path, custom_log_msg, exponential_backoff):
