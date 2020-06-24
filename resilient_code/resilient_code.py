@@ -70,14 +70,14 @@ def resilient(_func=None, max_tries=1, whitelist_var=[], blacklist_var=[], max_v
                             logging.error(f'Unable to dump pickle file: {e.with_traceback(None)}')
 
                     if to_log:
-                        msg = f'{func} errored\n    '
+                        msg = f"{' '.join(str(func).split(' ')[:2])+'>'} errored\n    "
 
                         ## Add custom log message, and traceback if it were to be swallowed afterwards
                         if custom_log_msg:
                             msg += custom_log_msg + '\n    '
                         if not reraise:
                             traceback_msg = traceback.format_exception(*sys.exc_info())
-                            msg += ''.join(traceback_msg) + '\n    '
+                            msg = msg[:-4] + ''.join(traceback_msg) + '    '
 
                         ## Log input arguments to function
                         func_arg_msg = ''
@@ -102,12 +102,13 @@ def resilient(_func=None, max_tries=1, whitelist_var=[], blacklist_var=[], max_v
                         if func_arg_msg:
                             msg += func_arg_msg + '\n    '
 
+                        ## Log variable dump
                         for i in local_var_dump:
                             if whitelist_var and i not in whitelist_var:
                                 continue
                             if blacklist_var and i in blacklist_var:
                                 continue
-                            if len(str(local_var_dump[i])) > max_var_str_len:
+                            if len(str(local_var_dump[i])) > max_var_str_len: # truncate variables
                                 local_var_dump[i] = str(type(local_var_dump[i])) + ' ' + \
                                     str(local_var_dump[i])[:max_var_str_len]
 
@@ -133,9 +134,12 @@ class Resilient(object):
     """Code block decorator for resilient_code"""
 
     def __init__(self, max_tries=1, whitelist_var=[], blacklist_var=[], max_var_str_len=500, to_log=True,
-                 reraise=True, _exception_handler=False,
+                 reraise=True, _exception_handler=False, exponential_backoff={'min': 0.05, 'max': 1},
                  to_pickle=False, to_pickle_path='exception_variable_dump.pkl', custom_log_msg=''):
         """
+        Because there's no function scope, variable dump is done by a diff of variables before the code block and where the exception is raised.
+        This will not capture variables that are already defined before the code block and redefined within the code block, and this is intentional for performance reasons.
+
         Args:
             max_tries (int): maximum tries to run function
             whitelist_var (list of str): list of variables to solely dump in case of exception. If this is populated, blacklist_var is ignored.
@@ -170,6 +174,7 @@ class Resilient(object):
         self.to_pickle_path = to_pickle_path
         self.custom_log_msg = custom_log_msg
         self._exception_handler = _exception_handler
+        self.exponential_backoff = exponential_backoff
         self.reraise = reraise
         self.sleep_time = -1
 
@@ -179,7 +184,7 @@ class Resilient(object):
     def __enter__(self):
         pass
 
-    def __exit__(self, exc_type, exc_value, traceback,
+    def __exit__(self, exc_type, exc_value, _traceback,
                  _var_dump=None, exc_info=None):
         global qwe, q, final_keys, yes_keys, ori, no_keys, qwe_processed
         if isinstance(exc_value, BaseException):
@@ -187,8 +192,9 @@ class Resilient(object):
             if self._exception_handler:
                 # being called by recursive
                 if self._exception_handler['last_iter']:
-                    self._exception_handler['exception'] = (exc_type, exc_value, traceback)
+                    self._exception_handler['exception'] = (exc_type, exc_value, _traceback)
                     self._exception_handler['_var_dump'] = inspect.trace()[-1][0].f_locals
+                    self._exception_handler['exc_info'] = sys.exc_info()
                     return True
                 else:
                     self._exception_handler['exception'] = True
@@ -205,23 +211,31 @@ class Resilient(object):
                     if i in _var_dump:  # globals():
                         final_var_dump[i] = _var_dump[i]  # globals()[i]
             else:
-                # filter out unlikely variables that we might be interested in
+                # filter out unlikely variables that we would be interested in
                 _var_dump = {k: v for k, v in _var_dump.items() if k[0] != '_' and type(v) not in
                              (types.FunctionType, types.ModuleType, types.MethodType, type)}
 
                 final_keys = set(_var_dump.keys()).difference(self.original_keys)
 
-#                all_types = set([type(_var_dump[i]) for i in _var_dump])
-#                print('type',all_types)
-#                print('debug new keys',new_keys)
-#                print('debug new keys',set([(i,type(_var_dump[i])) for i in _var_dump.keys() if i[0]!='_']))
-
                 final_var_dump = {k: _var_dump[k] for k in final_keys}
 
             if self.to_pickle:
-                pickle.dump(final_var_dump, open(self.to_pickle_path, 'wb'))
+                try:
+                    pickle.dump(final_var_dump, open(self.to_pickle_path, 'wb'))
+                except Exception as e:
+                    logging.error(f'Unable to dump pickle file: {e.with_traceback(None)}')
 
             if self.to_log:
+
+                msg = f'Code block errored\n    '
+
+                if self.custom_log_msg:
+                    msg += self.custom_log_msg + '\n    '
+
+                if not self.reraise:
+                    traceback_msg = traceback.format_exception(*exc_info)
+                    msg = msg[:-4] + ''.join(traceback_msg) + '    '
+
                 for i in final_var_dump:
                     if self.whitelist_var and i not in self.whitelist_var:
                         continue
@@ -231,13 +245,8 @@ class Resilient(object):
                         final_var_dump[i] = str(type(final_var_dump[i])) + ' ' + \
                             str(final_var_dump[i])[:self.max_var_str_len]
 
-                if not self.reraise:
-                    traceback_msg = traceback.format_exception(*exc_info)
-                    logging.error(''.join(traceback_msg))
-                msg = f'Exception variable dump: {final_var_dump}'
-                if self.custom_log_msg:
-                    msg = self.custom_log_msg + '\n' + msg
-                logging.error(str((exc_type, exc_value, traceback)))
+                msg += f'Exception variable dump: {final_var_dump}'
+
                 logging.error(msg)
 
             if not self.reraise:
@@ -249,8 +258,7 @@ class Resilient(object):
 
     def __iter__(self):
         if self.max_tries == 1:
-            raise ValueError(
-                "If max_tries == 1, simply do 'with Resilient():' will suffice.")
+            raise ValueError("If max_tries == 1, simply do 'with Resilient():' will suffice.")
         _exception_handler = {'last_iter': False, 'exception': None}
         while True:
             self.tries += 1
@@ -258,10 +266,9 @@ class Resilient(object):
             if not _exception_handler['exception']:  # no errors
                 break
             if self.tries >= self.max_tries:
-                # handle error
-                #                print(_exception_handler['exception'])
-                return self.__exit__(*_exception_handler['exception'], var_dump=_exception_handler['var_dump'],
-                                     exc_info=sys.exc_info())
+                # handle error by passing into .__exit__ method
+                return self.__exit__(*_exception_handler['exception'], _var_dump=_exception_handler['_var_dump'],
+                                     exc_info=_exception_handler['exc_info'])
             elif self.tries + 1 == self.max_tries:
                 _exception_handler['last_iter'] = True
 
@@ -272,6 +279,7 @@ class Resilient(object):
 
 
 def _determine_sleep_time(current_time, min_time, max_time):
+    """Calculates exponential back-off period. Times are in seconds."""
     if current_time == -1:
         current_time = min_time
     else:
