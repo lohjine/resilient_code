@@ -262,6 +262,7 @@ class Resilient(object):
             pass
 
     def __iter__(self):
+        """This method allows this class to be used as an iterator for max_tries > 1"""
         if self.max_tries == 1:
             raise ValueError("If max_tries == 1, simply do 'with Resilient():' will suffice.")
         _exception_handler = {'last_iter': False, 'exception': None}
@@ -301,7 +302,7 @@ def _determine_sleep_time(current_time, min_time, max_time):
 def _check_input_arguments(max_tries, whitelist_var, blacklist_var, max_var_str_len, to_log, reraise, to_pickle,
                            to_pickle_path, custom_log_msg, exponential_backoff):
     if not isinstance(max_tries, int):
-        raise TypeError(f'max_tries was {max_tries}, but it must be an integer')
+        raise TypeError(f'max_tries was {type(max_tries)}, but it must be an integer')
     if not max_tries > 0:
         raise ValueError('max_tries must be more than 0')
     if not isinstance(whitelist_var, (list, tuple)):
@@ -313,19 +314,19 @@ def _check_input_arguments(max_tries, whitelist_var, blacklist_var, max_var_str_
     if not all([isinstance(i, str) for i in blacklist_var]):
         raise ValueError(f'blacklist_var was {blacklist_var}, but it must contain all strings')
     if not isinstance(max_var_str_len, int):
-        raise TypeError(f'max_var_str_len was {max_var_str_len}, but it must be an integer')
+        raise TypeError(f'max_var_str_len was {type(max_var_str_len)}, but it must be an integer')
     if not max_var_str_len >= 0:
         raise ValueError('max_var_str_len must be more than or equal to 0')
     if not isinstance(to_log, bool):
-        raise TypeError(f'to_log was {to_log}, but it must be a boolean')
+        raise TypeError(f'to_log was {type(to_log)}, but it must be a boolean')
     if not isinstance(reraise, bool):
-        raise TypeError(f'reraise was {reraise}, but it must be a boolean')
+        raise TypeError(f'reraise was {type(reraise)}, but it must be a boolean')
     if not isinstance(to_pickle, bool):
-        raise TypeError(f'to_pickle was {to_pickle}, but it must be a boolean')
+        raise TypeError(f'to_pickle was {type(to_pickle)}, but it must be a boolean')
     if not isinstance(to_pickle_path, str):
-        raise TypeError(f'to_pickle was {to_pickle_path}, but it must be a string')
+        raise TypeError(f'to_pickle was {type(to_pickle_path)}, but it must be a string')
     if not isinstance(custom_log_msg, str):
-        raise TypeError(f'to_pickle was {custom_log_msg}, but it must be a string')
+        raise TypeError(f'to_pickle was {type(custom_log_msg)}, but it must be a string')
     if not (isinstance(exponential_backoff, dict) or not exponential_backoff):
         raise TypeError(f'exponential_backoff was {exponential_backoff}, but it must be a dict or falsy')
     if isinstance(exponential_backoff, dict):
