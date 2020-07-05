@@ -1,5 +1,7 @@
 # Resilient Code
- 
+
+> Give me six lines written by the most capable programmer in the world, and I will find enough bugs in them to fire him. 
+
 There are three cases of code failures. The first case is known knowns, you can code specifically to detect and handle these cases. The second case is known unknowns, assertions can be used to safeguard against these. The third case is unknown unknowns, where you have to resort to try except, and painfully debug the stack trace each time it occurs.
 
 This library simplifies the way to handle the third case of code failures by introducing decorators and helper functions to automatically handle errors using multiple features such as retrying, logging, dumping variables, all with the minimal amount of code decoration.
