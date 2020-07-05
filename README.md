@@ -22,7 +22,7 @@ If used on a function, resilient_code is able to dump local variables and input 
 
 By default, resilient will dump variables using `logging`, and re-raise the exception.
 
-You can tweak the number of retries, additionally dump varibles to pickled file, specify variables to dump/ignore. See Args section below.
+You can tweak the number of retries, additionally dump variables to pickled file, specify variables to dump/ignore. See Args section below.
 
 ```python
 from resilient_code import resilient, Resilient
